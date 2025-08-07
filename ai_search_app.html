@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dreamy Research Companion</title>
+    <style>
+        /* General Reset and Body Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f8ff 100%); /* Alice Blue to Honeydew */
+            color: #333333; /* Darker text for readability on light background */
+            min-height: 100vh;
+            overflow: visible; /* Changed to hidden to manage background animations */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative; /* Needed for absolute positioning of background elements */
+        }
+
+        /* --- New: Animated Background Blobs --- */
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.6;
+            filter: blur(80px); /* Increased blur for dreamier effect */
+            z-index: -2;
+            animation: blobFloat 20s infinite ease-in-out alternate;
+        }
+
+        body::before {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, Aliceblue); /* Light Blue, Thistle */
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        @keyframes blobFloat {
+            0% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+            25% { transform: translate(100px, 50px) scale(1.05); opacity: 0.7; }
+            50% { transform: translate(-50px, 100px) scale(1.1); opacity: 0.8; }
+            75% { transform: translate(150px, -50px) scale(0.95); opacity: 0.7; }
+            100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+        }
+
+        /* Container for Chat Interface */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative; /* Needed for z-index */
+            z-index: 1; /* Ensure container is above background animations */
+            /* --- New: Container entry animation --- */
+            transform: translateY(-50px);
+            opacity: 0;
+            animation: containerEntry 0.8s ease-out forwards;
+            animation-delay: 0.3s;
+        }
+
+        @keyframes containerEntry {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px 0;
+        }
+
+        .title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ADD8E6, #98FB98, #B0E0E6, #D8BFD8);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 6s ease-in-out infinite;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0,0,0,0.1);
+            /* --- New: Title fade-in and bounce --- */
+            transform: translateY(-20px);
+            opacity: 0;
+            animation: titleEntry 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+        }
+
+        @keyframes titleEntry {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666666;
+            opacity: 0.9;
+            font-weight: 400;
+            /* --- New: Subtitle fade-in --- */
+            transform: translateY(-10px);
+            opacity: 0;
+            animation: subtitleEntry 0.8s ease-out forwards;
+            animation-delay: 0.2s; /* Slight delay after title */
+        }
+
+        @keyframes subtitleEntry {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 0% 100%; }
+            75% { background-position: 100% 0%; }
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(173, 216, 230, 0.4);
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            height: 20vh; /* This might need adjustment, was 20vh; for flex container, it's often better to let it grow */
+            width: 100vh; /* This might need adjustment, was 100vh; for flex container, it's often better to let it grow */
+            /* Removed fixed height/width to let flexbox manage it better */
+            flex: 1; /* Make it take available space */
+            min-height: 400px; /* Ensure a minimum height for the chat area */
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            color: #333;
+            position: relative; /* For scroll indicator */
+        }
+
+        /* --- New: Scroll Indicator --- */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            width: 30px;
+            height: 30px;
+            background: rgba(173, 216, 230, 0.8); /* Alice Blue tint */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+            font-size: 1.2em;
+            color: white;
+        }
+
+        .scroll-indicator.visible {
+            opacity: 1;
+            pointer-events: auto;
+            animation: bounceScroll 1.5s infinite ease-in-out;
+        }
+
+        .scroll-indicator:hover {
+            transform: translateY(-3px);
+            background: #5F9EA0; /* Cadet Blue */
+        }
+
+        @keyframes bounceScroll {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 18px 24px;
+            border-radius: 25px;
+            line-height: 1.6;
+            animation: slideIn 0.4s ease-out;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            position: relative; /* For message sparkle */
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- New: Message Sparkle Effect --- */
+        .message::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            border-radius: inherit;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+            pointer-events: none;
+            animation: sparkleFade 0.7s ease-out forwards;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .message:not(.typing-indicator):not(.welcome-message)::before {
+            animation: sparkleFade 0.7s ease-out forwards;
+        }
+
+        @keyframes sparkleFade {
+            0% { opacity: 1; transform: scale(0.8); }
+            100% { opacity: 0; transform: scale(1.2); }
+        }
+
+
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #B0E0E6, #87CEEB);
+            color: white;
+            border-bottom-right-radius: 8px;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background: linear-gradient(135deg, #F0FFF0, lavender);
+            color: #333;
+            border-bottom-left-radius: 8px;
+        }
+
+        .ai-message.status {
+            background: rgba(173, 216, 230, 0.15);
+            color: #5F9EA0;
+            font-style: italic;
+            padding: 12px 20px;
+            font-size: 0.9em;
+        }
+
+        .ai-message.suggestions {
+            background: rgba(152, 251, 152, 0.15);
+            color: #333;
+            border: 2px solid #8FBC8F;
+        }
+
+        .suggestions-list {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .suggestion-link {
+            display: block;
+            color: #5F9EA0;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            background: rgba(173, 216, 230, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .suggestion-link:hover {
+            background: rgba(173, 216, 230, 0.2);
+            border-color: #5F9EA0;
+            transform: translateX(5px) scale(1.02); /* More pronounced hover */
+            box-shadow: 0 4px 10px rgba(95, 158, 160, 0.2); /* Added shadow on hover */
+        }
+
+        /* Code styling */
+        .ai-message pre {
+            background: rgba(0, 50, 0, 0.8);
+            color: #90EE90;
+            padding: 20px;
+            border-radius: 15px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+            font-size: 0.9em;
+            border: 1px solid rgba(144, 238, 144, 0.2);
+        }
+
+        .ai-message code {
+            color: #90EE90;
+        }
+
+        /* Copy prompt styling */
+        .copy-prompt {
+            background: linear-gradient(135deg, #E0FFFF, #AFEEEE) !important;
+            color: #333 !important;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .copy-prompt-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .copy-prompt-buttons button {
+            padding: 12px 25px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            position: relative; /* For subtle pulse effect */
+            overflow: hidden;
+        }
+        
+        /* --- New: Button subtle pulse on hover --- */
+        .copy-prompt-buttons button:hover::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: buttonPulse 0.8s ease-out forwards;
+        }
+
+        @keyframes buttonPulse {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+        }
+
+
+        .yes-btn {
+            background: linear-gradient(135deg, #87CEEB, #5F9EA0);
+            color: white;
+        }
+
+        .yes-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(95, 158, 160, 0.4);
+        }
+
+        .no-btn {
+            background: linear-gradient(135deg, #98FB98, #6B8E23);
+            color: white;
+        }
+
+        .no-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(107, 142, 35, 0.4);
+        }
+
+        /* --- New: Button active state --- */
+        .copy-prompt-buttons button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            align-self: flex-start;
+            background: rgba(173, 216, 230, 0.2);
+            color: #5F9EA0;
+            border-bottom-left-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 24px;
+            font-weight: 500;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .typing-dot {
+            width: 10px;
+            height: 10px;
+            background: #5F9EA0;
+            border-radius: 50%;
+            /* --- New: More dynamic typing dots --- */
+            animation: typingDotBounce 1.4s ease-in-out infinite;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingDotBounce {
+            0%, 60%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
+            30% { transform: translateY(-12px) scale(1.1); opacity: 1; }
+        }
+
+        /* Input Area */
+        .input-container {
+            padding: 25px;
+            border-top: 1px solid rgba(173, 216, 230, 0.2);
+            background: rgba(240, 255, 240, 0.5);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 18px 25px;
+            border: 2px solid rgba(173, 216, 230, 0.5);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            resize: none;
+            min-height: 55px;
+            max-height: 150px;
+            font-family: inherit;
+        }
+
+        /* --- New: Input focus animation --- */
+        .message-input:focus {
+            border-color: #5F9EA0;
+            box-shadow: 0 0 30px rgba(95, 158, 160, 0.3);
+            background: white;
+            transform: scale(1.01); /* Slight scale on focus */
+            animation: inputGlow 1.5s infinite alternate; /* Pulsing border glow */
+        }
+
+        @keyframes inputGlow {
+            from { box-shadow: 0 0 10px rgba(95, 158, 160, 0.3), 0 0 30px rgba(95, 158, 160, 0.1); }
+            to { box-shadow: 0 0 20px rgba(95, 158, 160, 0.5), 0 0 40px rgba(95, 158, 160, 0.2); }
+        }
+
+        .message-input::placeholder {
+            color: #888;
+        }
+
+        .send-btn {
+            padding: 18px;
+            background: linear-gradient(135deg, Honeydew);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 5px 20px rgba(95, 158, 160, 0.3);
+            position: relative;
+            overflow: hidden;
+            color: #AFEEEE;
+        }
+
+        /* --- New: Send button hover pulse --- */
+        .send-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(95, 158, 160, 0.5);
+        }
+
+        .send-btn:hover::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            animation: sendButtonPulse 0.6s ease-out forwards;
+        }
+
+        @keyframes sendButtonPulse {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+
+        /* --- New: Send button active state --- */
+        .send-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* --- New: Rocket icon animation --- */
+        .send-btn .rocket-icon {
+            display: block; /* Ensure it's a block element to animate */
+            animation: rocketFloat 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes rocketFloat {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0); }
+        }
+
+
+        /* Enhanced floating particles */
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(240, 255, 255, 0.3); /* Slightly more opaque */
+            border-radius: 50%;
+            animation: particleFloatWave 15s ease-in-out infinite; /* Slower and wavier */
+        }
+
+        /* --- New: Wavier particle animation --- */
+        @keyframes particleFloatWave {
+            0%, 100% {
+                transform: translateY(0px) translateX(0px) rotate(0deg) scale(1);
+                opacity: 0;
+            }
+            25% {
+                transform: translateY(-120px) translateX(-60px) rotate(90deg) scale(1.1);
+                opacity: 0.6;
+            }
+            50% {
+                transform: translateY(-240px) translateX(60px) rotate(180deg) scale(1.2);
+                opacity: 0.9;
+            }
+            75% {
+                transform: translateY(-180px) translateX(-30px) rotate(270deg) scale(1.05);
+                opacity: 0.7;
+            }
+        }
+
+        /* Welcome message */
+        .welcome-message {
+            text-align: center;
+            color: #5F9EA0;
+            opacity: 0.8;
+            font-style: italic;
+            margin: 30px 0;
+            font-size: 1.1em;
+            font-weight: 300;
+            /* Added animation for welcome message */
+            transform: scale(0.9);
+            opacity: 0;
+            animation: welcomeFadeIn 1s ease-out forwards;
+            animation-delay: 1s; /* Delay after container entry */
+        }
+
+        @keyframes welcomeFadeIn {
+            to {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+        }
+
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .title { font-size: 2.2rem; }
+            .container { padding: 15px; margin: 10px auto; height: calc(100vh - 20px); }
+            .message { max-width: 92%; }
+            .chat-messages { padding: 20px; }
+            .input-container { padding: 20px; }
+        }
+
+        /* Custom scrollbar */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(240, 255, 240, 0.3);
+            border-radius: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(173, 216, 230, 0.7);
+            border-radius: 10px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: rgba(173, 216, 230, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Emilio</h1>
+            <p class="subtitle">✨ Your gentle guide to knowledge and innovation.</p>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <samp>👋 Hello, I am your personal Mishmish technologies <br> assistant. now lets start the Konversation</samp>
+                </div>
+                <div class="scroll-indicator" id="scrollIndicator">
+                    ▼
+                </div>
+            </div>
+            
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        class="message-input" 
+                        id="messageInput" 
+                        placeholder="Ask me anything..."
+                        rows="1"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn">
+                        <span class="rocket-icon">🚀</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const scrollIndicator = document.getElementById('scrollIndicator');
+
+        let typingIndicatorElement = null;
+        let lastGeneratedContent = '';
+        let currentUserQuery = '';
+
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            // Clear existing particles if any, to prevent duplicates on re-init
+            particlesContainer.innerHTML = ''; 
+            for (let i = 0; i < 70; i++) { // Increased number of particles
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.width = (Math.random() * 10 + 5) + 'px'; /* Slightly larger particles */
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 15 + 's'; /* Longer delays for more staggered effect */
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's'; /* Longer durations */
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+        }
+
+        function displayMessage(message, sender, extraClass = '') {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+            if (extraClass) {
+                messageElement.classList.add(extraClass);
+            }
+            messageElement.innerHTML = message;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            updateScrollIndicatorVisibility(); // Update indicator after new message
+            return messageElement;
+        }
+
+        function showTypingIndicator(text = 'Whispering through the data...') {
+            if (!typingIndicatorElement) {
+                typingIndicatorElement = document.createElement('div');
+                typingIndicatorElement.classList.add('message', 'typing-indicator');
+                typingIndicatorElement.innerHTML = `
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <span>✨ ${text}</span>
+                `;
+                chatMessages.appendChild(typingIndicatorElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                updateScrollIndicatorVisibility();
+            }
+        }
+
+        function hideTypingIndicator() {
+            if (typingIndicatorElement) {
+                typingIndicatorElement.remove();
+                typingIndicatorElement = null;
+                updateScrollIndicatorVisibility();
+            }
+        }
+
+        function typeMessage(element, text, speed = 20, callback = () => {}) {
+            let currentIndex = 0;
+            element.innerHTML = '';
+            
+            function typeNextChar() {
+                if (currentIndex < text.length) {
+                    // Check for start of <pre> tag
+                    if (text.substring(currentIndex).startsWith('<pre>')) {
+                        const preEndIndex = text.indexOf('</pre>', currentIndex) + 6;
+                        element.innerHTML += text.substring(currentIndex, preEndIndex);
+                        currentIndex = preEndIndex;
+                    } else {
+                        element.innerHTML += text.charAt(currentIndex);
+                        currentIndex++;
+                    }
+                    
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    updateScrollIndicatorVisibility(); // Update during typing
+                    setTimeout(typeNextChar, speed);
+                } else {
+                    if (callback) callback();
+                }
+            }
+            typeNextChar();
+        }
+
+        // --- New: Scroll indicator logic ---
+        function updateScrollIndicatorVisibility() {
+            if (chatMessages.scrollHeight > chatMessages.clientHeight && 
+                chatMessages.scrollTop < chatMessages.scrollHeight - chatMessages.clientHeight - 20) { // Add a buffer
+                scrollIndicator.classList.add('visible');
+            } else {
+                scrollIndicator.classList.remove('visible');
+            }
+        }
+
+        function scrollToBottom() {
+            chatMessages.scrollTo({
+                top: chatMessages.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        /* --- Keep existing research and generation functions as is --- */
+        async function enhancedWikipediaSearch(query) {
+            try {
+                const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*&srlimit=10`;
+                const searchResponse = await fetch(searchUrl);
+                const searchData = await searchResponse.json();
+                
+                if (!searchData.query || searchData.query.search.length === 0) {
+                    return 'No Wikipedia articles found for this topic.';
+                }
+
+                let combinedContent = '';
+                const topResults = searchData.query.search.slice(0, 3);
+                
+                for (const result of topResults) {
+                    const contentUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=true&explaintext=true&titles=${encodeURIComponent(result.title)}}&format=json&origin=*`;
+                    const contentResponse = await fetch(contentUrl);
+                    const contentData = await contentResponse.json();
+                    
+                    const pages = contentData.query.pages;
+                    const pageId = Object.keys(pages)[0];
+                    const extract = pages[pageId].extract;
+                    
+                    if (extract && extract.length > 100) {
+                        combinedContent += `\n\n=== ${result.title} ===\n${extract.substring(0, 1500)}${extract.length > 1500 ? '...' : ''}`;
+                    }
+                }
+                
+                return combinedContent || 'Limited Wikipedia content available for this topic.';
+            } catch (error) {
+                console.error('Enhanced Wikipedia search error:', error);
+                return 'Error accessing Wikipedia data.';
+            }
+        }
+
+        async function multiSourceResearch(query) {
+            const results = {};
+            
+            try {
+                results.wikipedia = await enhancedWikipediaSearch(query);
+                
+                const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+                const ddgResponse = await fetch(ddgUrl);
+                const ddgData = await ddgResponse.json();
+                
+                let ddgContent = '';
+                if (ddgData.Abstract) {
+                    ddgContent += ddgData.Abstract;
+                }
+                if (ddgData.Definition) {
+                    ddgContent += '\n\nDefinition: ' + ddgData.Definition;
+                }
+                if (ddgData.RelatedTopics && ddgData.RelatedTopics.length > 0) {
+                    ddgContent += '\n\nRelated Information:\n';
+                    ddgData.RelatedTopics.slice(0, 5).forEach(topic => {
+                        if (topic.Text) {
+                            ddgContent += '• ' + topic.Text + '\n';
+                        }
+                    });
+                }
+                
+                results.duckduckgo = ddgContent || 'No DuckDuckGo instant answers available.';
+                
+                return results;
+            } catch (error) {
+                console.error('Multi-source research error:', error);
+                return {
+                    wikipedia: 'Error accessing Wikipedia',
+                    duckduckgo: 'Error accessing DuckDuckGo'
+                };
+            }
+        }
+
+        async function analyzeQuery(query) {
+            try {
+                const analysisPrompt = `Analyze this query and identify the key topics, concepts, and research angles: "${query}"
+
+Please provide:
+1. Main topic/subject
+2. 3-5 specific research keywords
+3. Query category (science, technology, history, current events, etc.)
+4. Suggested search variations
+
+Format as: TOPIC:... KEYWORDS:... CATEGORY:... VARIATIONS:...`;
+
+                const response = await fetch(`https://text.pollinations.ai/?prompt=${encodeURIComponent(analysisPrompt)}`);
+                if (!response.ok) throw new Error('Analysis failed');
+                
+                const analysis = await response.text();
+                return analysis;
+            } catch (error) {
+                console.error('Query analysis error:', error);
+                return `TOPIC: ${query} KEYWORDS: ${query} CATEGORY: general VARIATIONS: ${query}`;
+            }
+        }
+
+        async function generateEnhancedQueries(originalQuery, analysis) {
+            try {
+                const prompt = `Based on this query: "${originalQuery}" and analysis: "${analysis}"
+
+Generate 5 diverse, specific research queries that would provide comprehensive information. Include:
+- Factual/definition queries
+- Historical context queries  
+- Current developments
+- Technical details
+- Related concepts
+
+Return only the queries, one per line.`;
+
+                const response = await fetch(`https://text.pollinations.ai/?prompt=${encodeURIComponent(prompt)}`);
+                if (!response.ok) throw new Error('Query generation failed');
+                
+                const text = await response.text();
+                const queries = text.split('\n')
+                    .map(q => q.trim().replace(/^\d+\.?\s*/, ''))
+                    .filter(q => q.length > 10)
+                    .slice(0, 5);
+                
+                return queries.length > 0 ? queries : [originalQuery];
+            } catch (error) {
+                console.error('Enhanced query generation error:', error);
+                return [originalQuery];
+            }
+        }
+
+        function isCodeRequest(query) {
+            const codeKeywords = [
+                'code', 'program', 'script', 'function', 'algorithm', 'debug', 'fix',
+                'javascript', 'python', 'html', 'css', 'react', 'programming', 'develop',
+                'software', 'app', 'website', 'api', 'database', 'query', 'syntax',
+                'compile', 'execute', 'run', 'build', 'deploy', 'framework', 'library',
+                'write a', 'how to code', 'example code', 'code for'
+            ];
+            return codeKeywords.some(keyword => query.toLowerCase().includes(keyword));
+        }
+
+        function isImageRequest(query) {
+            const imageKeywords = [
+                'image', 'picture', 'photo', 'generate', 'create', 'draw', 'art', 'artwork',
+                'illustration', 'visual', 'design', 'render', 'make', 'show me', 'visualize',
+                'paint', 'sketch', 'logo', 'icon', 'banner', 'poster', 'graphic'
+            ];
+            // Refined logic: ensure it implies generation, not just searching for existing images.
+            return imageKeywords.some(keyword => query.toLowerCase().includes(keyword)) &&
+                   (query.toLowerCase().includes('generate') || query.toLowerCase().includes('create') ||
+                    query.toLowerCase().includes('draw') || query.toLowerCase().includes('make') ||
+                    query.toLowerCase().includes('show me a') || query.toLowerCase().includes('visualize'));
+        }
+
+        async function handleSendMessage() {
+            const query = messageInput.value.trim();
+            if (!query) return;
+
+            displayMessage(query, 'user');
+            messageInput.value = '';
+            autoResize(messageInput);
+            sendBtn.disabled = true;
+
+            currentUserQuery = query; // Store the current query for "copy prompt"
+            lastGeneratedContent = ''; // Reset last generated content
+
+            showTypingIndicator();
+
+            try {
+                if (isCodeRequest(query)) {
+                    await handleCodeRequest(query);
+                } else if (isImageRequest(query)) {
+                    await handleImageRequest(query);
+                } else {
+                    await handleResearchRequest(query);
+                }
+            } catch (error) {
+                console.error("Error during message processing:", error);
+                hideTypingIndicator();
+                displayMessage("Oops! Something went wrong. Please try again.", 'ai', 'status');
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        async function handleCodeRequest(query) {
+            showTypingIndicator('Crafting code masterpiece...');
+            try {
+                const response = await fetch(`https://text.pollinations.ai/?prompt=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error('Pollinations API failed for coding.');
+                
+                const codeContent = await response.text();
+                const cleanCode = codeContent.replace(/```(javascript|python|html|css|json|php|ruby|go|java|csharp|swift|kotlin|markdown|sql|bash|clojure|cpp|diff|dockerfile|elixir|erlang|git|graphql|handlebars|haskell|ini|jsx|julia|latex|less|lisp|livescript|lua|makefile|matlab|objectivec|perl|powershell|pug|r|rust|sass|scala|scheme|scss|shell|stata|stylus|toml|typescript|vbnet|vim|yaml)\n|```/g, '').trim();
+                
+                hideTypingIndicator();
+                lastGeneratedContent = `<pre>${cleanCode}</pre>`;
+                typeMessage(displayMessage('Generating code...', 'ai'), lastGeneratedContent, 10, () => {
+                    displayCopyPromptButtons('code');
+                });
+
+            } catch (error) {
+                console.error('Coding generation error:', error);
+                hideTypingIndicator();
+                displayMessage("I'm sorry, I couldn't generate code for that request. The coding service might be unavailable.", 'ai', 'status');
+            }
+        }
+
+        async function handleImageRequest(query) {
+            showTypingIndicator('Conjuring pixels into art...');
+            try {
+                const prompt = query.replace(/^(generate|create|draw|make|show me|an?)\s*(image|picture|photo|art|artwork|illustration|visual)\s*(of)?\s*/i, '').trim();
+                
+                const response = await fetch('https://api.magicstudio.com/api/ai-art-generator', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt, width: 512, height: 512, steps: 20 })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Magic Studio API failed: ${response.status} - ${errorText}`);
+                }
+                
+                const data = await response.json();
+                const imageUrl = data.image_url || data.url;
+
+                hideTypingIndicator();
+                if (imageUrl) {
+                    lastGeneratedContent = `<img src="${imageUrl}" alt="${prompt}" style="max-width:100%; height:auto; border-radius:15px; margin-top: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">`;
+                    typeMessage(displayMessage(`Here is an image generated for "${prompt}":`, 'ai'), lastGeneratedContent, 1, () => {
+                         displayCopyPromptButtons('image');
+                    });
+                   
+                } else {
+                    displayMessage("I couldn't generate an image for that. Please try a different prompt.", 'ai', 'status');
+                }
+            } catch (error) {
+                console.error('Image generation error:', error);
+                hideTypingIndicator();
+                displayMessage("I'm sorry, I couldn't generate an image for that request. The image service might be unavailable.", 'ai', 'status');
+            }
+        }
+
+        async function handleResearchRequest(query) {
+            showTypingIndicator('Delving into the knowledge streams...');
+            try {
+                const analysis = await analyzeQuery(query);
+                const enhancedQueries = await generateEnhancedQueries(query, analysis);
+                
+                let combinedContent = '';
+                let researchMessageElement = displayMessage('', 'ai'); // Placeholder for research content
+
+                const researchPromises = enhancedQueries.map(q => multiSourceResearch(q));
+                const resultsArray = await Promise.all(researchPromises);
+
+                hideTypingIndicator();
+
+                combinedContent += `<p>I've gathered information on your query. Here's what I found from various sources:</p>`;
+                combinedContent += `<p><strong>Initial Analysis:</strong> ${analysis.replace(/\n/g, '<br>')}</p>`;
+
+                resultsArray.forEach((result, index) => {
+                    combinedContent += `<hr style="border: 0; height: 1px; background: #eee; margin: 20px 0;">`;
+                    combinedContent += `<h4>🔍 Research Result for: "${enhancedQueries[index]}"</h4>`;
+                    if (result.wikipedia && result.wikipedia !== 'No Wikipedia articles found for this topic.' && result.wikipedia !== 'Limited Wikipedia content available for this topic.') {
+                        combinedContent += `<p><strong>From Wikipedia:</strong><br>${result.wikipedia}</p>`;
+                    } else {
+                        combinedContent += `<p><strong>From Wikipedia:</strong> ${result.wikipedia}</p>`;
+                    }
+                    if (result.duckduckgo && result.duckduckgo !== 'No DuckDuckGo instant answers available.') {
+                        combinedContent += `<p><strong>From DuckDuckGo:</strong><br>${result.duckduckgo}</p>`;
+                    } else {
+                        combinedContent += `<p><strong>From DuckDuckGo:</strong> ${result.duckduckgo}</p>`;
+                    }
+                });
+                
+                lastGeneratedContent = combinedContent;
+                typeMessage(researchMessageElement, lastGeneratedContent, 10, () => {
+                    displayCopyPromptButtons('research');
+                    displayResearchSuggestions(enhancedQueries);
+                });
+
+            } catch (error) {
+                console.error('Research query processing error:', error);
+                hideTypingIndicator();
+                displayMessage("I encountered an issue while performing the research. Please try again or rephrase your query.", 'ai', 'status');
+            }
+        }
+
+        function displayCopyPromptButtons(serviceType) {
+            const promptCopyMessage = displayMessage('Would you like me to save your original prompt?', 'ai', 'copy-prompt');
+            promptCopyMessage.innerHTML += `
+                <div class="copy-prompt-buttons">
+                    <button class="yes-btn" onclick="copyPromptToClipboard('${currentUserQuery}', '${serviceType}')">Yes, Save Prompt</button>
+                    <button class="no-btn" onclick="removeMessage(this.closest('.message'))">No Thanks</button>
+                </div>
+            `;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function copyPromptToClipboard(prompt, serviceType) {
+            navigator.clipboard.writeText(prompt).then(() => {
+                const messageElement = displayMessage(`Copied "${serviceType}" prompt to clipboard!`, 'ai', 'status');
+                setTimeout(() => removeMessage(messageElement), 3000);
+            }).catch(err => {
+                console.error('Failed to copy prompt:', err);
+                const messageElement = displayMessage('Failed to copy prompt.', 'ai', 'status');
+                setTimeout(() => removeMessage(messageElement), 3000);
+            });
+            removeMessage(event.target.closest('.message')); // Remove the "Save prompt?" message
+        }
+
+        function displayResearchSuggestions(queries) {
+            const suggestionsMessage = displayMessage('Here are some related questions you might want to explore:', 'ai', 'suggestions');
+            const ul = document.createElement('div');
+            ul.classList.add('suggestions-list');
+            queries.forEach(q => {
+                const li = document.createElement('a');
+                li.href = '#'; // Make it clickable but prevent default navigation
+                li.classList.add('suggestion-link');
+                li.textContent = q;
+                li.onclick = (e) => {
+                    e.preventDefault();
+                    messageInput.value = q;
+                    handleSendMessage();
+                    removeMessage(suggestionsMessage); // Remove suggestions after one is clicked
+                };
+                ul.appendChild(li);
+            });
+            suggestionsMessage.appendChild(ul);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeMessage(element) {
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        }
+
+        // Event Listeners
+        sendBtn.addEventListener('click', handleSendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Prevent new line
+                handleSendMessage();
+            }
+        });
+        messageInput.addEventListener('input', () => autoResize(messageInput));
+        chatMessages.addEventListener('scroll', updateScrollIndicatorVisibility);
+        scrollIndicator.addEventListener('click', scrollToBottom);
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            autoResize(messageInput);
+            updateScrollIndicatorVisibility();
+            // Initial check for scroll indicator after welcome message animation
+            setTimeout(updateScrollIndicatorVisibility, 1500); 
+        });
+
+        // Optional: Regenerate particles on window resize for better distribution
+        window.addEventListener('resize', createParticles);
+    </script>
+</body>
+</html>
